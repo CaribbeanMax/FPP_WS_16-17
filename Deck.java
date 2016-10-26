@@ -8,8 +8,9 @@ public class Deck {
 			for (int j=0; j<4; j++){
 				card[counter].c = CardColor.values()[j];
 				card[counter].v = CardValue.values()[i];
-				counter++;
+				//del
 			}
+			//blub
 		}
 	}
 }
