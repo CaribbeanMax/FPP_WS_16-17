@@ -7,9 +7,10 @@ public class Player {
 	private String playerName;
 	private int currentBet=0;
 	private int potShare=0;
+	private int seat;
 	private Card[] handCards = new Card[2];
-	public Player(String n, int m){
-		this.playerName = n; this.money = m;
+	public Player(String n, int m, int s){
+		this.playerName = n; this.money = m; this.seat = s;
 	}
 	public void addCard(Card card){
 		if(handCards[0] == null){
@@ -66,5 +67,8 @@ public class Player {
 	}
 	public Card[] getCards(){
 		return handCards;
+	}
+	public int getSeat(){
+		return this.seat;
 	}
 }
