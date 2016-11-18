@@ -18,6 +18,27 @@ public class Player {
 		}else if(handCards[1] == null){
 			handCards[1] = card;
 		}else{
+package main;
+
+import javax.swing.JOptionPane;
+
+public class Player {
+	private int money;
+	private String playerName;
+	private int currentBet=0;
+	private int potShare=0;
+	private Card[] handCards = new Card[2];
+	private int seat;
+	private boolean folded = false;
+	public Player(String n, int m, int s){
+		this.playerName = n; this.money = m; this.seat=s;
+	}
+	public void addCard(Card card){
+		if(handCards[0] == null){
+			handCards[0] = card;
+		}else if(handCards[1] == null){
+			handCards[1] = card;
+		}else{
 			JOptionPane.showMessageDialog(null, "Player hand is full!");
 		}
 	}
@@ -42,6 +63,7 @@ public class Player {
 			currentBet += payMoney;
 			return false;
 		}else{
+			JOptionPane.showMessageDialog(null, "Player has not enough money!");
 			return true;
 		}
 	}
@@ -70,5 +92,11 @@ public class Player {
 	}
 	public int getSeat(){
 		return this.seat;
+	}
+	public boolean getFolded(){
+		return this.folded;
+	}
+	public void setFolded(boolean f){
+		this.folded = f;
 	}
 }
