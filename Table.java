@@ -88,6 +88,15 @@ public class Table {
 		}
 		System.out.print("\n");
 	}
+	public LinkedList<Card> getSevenCards(Player p){
+		LinkedList<Card> sevenCards = new LinkedList<Card>();
+		for (int i = 0; i <= 5; i++){
+			sevenCards.add(communityCards[i]);
+		}
+		sevenCards.add(p.getCards()[0]);
+		sevenCards.add(p.getCards()[1]);
+		return sevenCards;
+	}
 	
 	public void run (){
 		//Basiseinstellungen des Spiels
@@ -233,6 +242,40 @@ public class Table {
 		}while (round<4 && foldCount+1 < playerList.size());
 		//Auswertung
 		printStatus();
-		
+		Integer minPotShare= null;
+		do{
+			HandValue maxHandValue= null;
+			minPotShare= null;
+			LinkedList<Player> holdsMaxHand= new LinkedList<Player>();
+			HandChecker checker= new HandChecker();	
+			for (int playerCount= 0; playerCount < playerList.size(); playerCount++){ //get minimal PotShare
+				if (!playerList.get(playerCount).getFolded() && playerList.get(playerCount).getPotShare()!= 0){
+					if ((Integer)minPotShare == null || minPotShare > playerList.get(playerCount).getPotShare()){
+						minPotShare=playerList.get(playerCount).getPotShare();
+					}
+					if(maxHandValue == null || checker.check(getSevenCards(playerList.get(playerCount))).compareTo(maxHandValue)> 0){
+						maxHandValue=checker.check(getSevenCards(playerList.get(playerCount)));
+						holdsMaxHand=new LinkedList<Player>();
+						holdsMaxHand.add(playerList.get(playerCount));
+					}else if(checker.check(getSevenCards(playerList.get(playerCount))).compareTo(maxHandValue) == 0){
+						holdsMaxHand.add(playerList.get(playerCount));
+					}
+				}
+			}
+			int pot = 0;
+			for (int playerCount= 0; playerCount < playerList.size(); playerCount++){
+				if(playerList.get(playerCount).getPotShare() >= minPotShare){
+					pot += minPotShare;
+					playerList.get(playerCount).looseShare(minPotShare);
+				}else{
+					pot += playerList.get(playerCount).getPotShare();
+					playerList.get(playerCount).looseShare(playerList.get(playerCount).getPotShare());
+				}
+			}
+			for (int playerCount= 0; playerCount < holdsMaxHand.size(); playerCount++){
+				holdsMaxHand.get(playerCount).gainMoney(pot/holdsMaxHand.size());
+			}
+			
+		}while(minPotShare != null);
 	}
 }
