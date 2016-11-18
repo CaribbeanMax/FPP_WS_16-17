@@ -92,7 +92,7 @@ public class Table {
 	}
 	public List<PokerCard> getSevenCards(Player p){
 		List<PokerCard> sevenCards = new LinkedList<PokerCard>();
-		for (int i = 0; i <= 5; i++){
+		for (int i = 0; i <= 4; i++){
 			sevenCards.add(communityCards[i]);
 		}
 		sevenCards.add(p.getCards()[0]);
