@@ -7,26 +7,6 @@ public class Player {
 	private String playerName;
 	private int currentBet=0;
 	private int potShare=0;
-	private int seat;
-	private Card[] handCards = new Card[2];
-	public Player(String n, int m, int s){
-		this.playerName = n; this.money = m; this.seat = s;
-	}
-	public void addCard(Card card){
-		if(handCards[0] == null){
-			handCards[0] = card;
-		}else if(handCards[1] == null){
-			handCards[1] = card;
-		}else{
-package main;
-
-import javax.swing.JOptionPane;
-
-public class Player {
-	private int money;
-	private String playerName;
-	private int currentBet=0;
-	private int potShare=0;
 	private Card[] handCards = new Card[2];
 	private int seat;
 	private boolean folded = false;
