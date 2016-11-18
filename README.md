@@ -6,3 +6,5 @@ OnlinePoker, ET, SB
 28.10.	aktuellen Stand und gegebene Dateien hochgeladen
 
 11.11.  Klasse Player und Table fertiggestellt  
+
+18.11.  Table um ehemalige Game-Klasse erweitert
