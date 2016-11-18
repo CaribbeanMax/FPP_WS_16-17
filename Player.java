@@ -67,9 +67,11 @@ public class Player {
 			return true;
 		}
 	}
-	public void raisePotShare(){
-		potShare += currentBet;
-		currentBet = 0;
+	public void looseShare(int minPotShare){
+		potShare -= minPotShare;
+	}
+	public void gainMoney(int moneyGain){
+		money += moneyGain;
 	}
 	public void getPot(int potMoney){
 		money += potMoney;
