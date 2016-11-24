@@ -17,7 +17,7 @@ public class Main {
 		return JOptionPane.showInputDialog("Name von Spieler " + (c+1) + "?" + (c>0?"\nAbbrechen für Spielbeginn":""), "Spieler "+ (c+1));
 	}
 	public static int inputStartMoney(String N){
-		return Integer.parseInt(JOptionPane.showInputDialog("Startgeld von " + N, 5000));
+		return Integer.parseInt(JOptionPane.showInputDialog("Startgeld von " + N, 1000));
 	}
 	public static int inputSeat(String N, int c){
 		return Integer.parseInt(JOptionPane.showInputDialog("Sitzplatz von " + N, c));
