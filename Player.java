@@ -10,6 +10,7 @@ public class Player {
 	private Card[] handCards = new Card[2];
 	private int seat;
 	private boolean folded = false;
+	
 	public Player(String n, int m, int s){
 		this.playerName = n; this.money = m; this.seat=s;
 	}
@@ -19,7 +20,7 @@ public class Player {
 		}else if(handCards[1] == null){
 			handCards[1] = card;
 		}else{
-			JOptionPane.showMessageDialog(null, "Player hand is full!");
+			JOptionPane.showMessageDialog(null, "Error: Player hand is full!");
 		}
 	}
 	public Card discardCard(){
@@ -33,23 +34,23 @@ public class Player {
 			handCards[1] = null;
 			return tmp;
 		}else{
-			JOptionPane.showMessageDialog(null, "Player hand is empty already!");
+			JOptionPane.showMessageDialog(null, "Error: Player hand is empty already!");
 			return  null;
 		}
 	}
 	public boolean putMoney(int payMoney){
-		if(money > payMoney){
+		if(money >= payMoney){
 			money -= payMoney;
 			currentBet += payMoney;
 			return false;
 		}else{
-			JOptionPane.showMessageDialog(null, "Player has not enough money!");
+			JOptionPane.showMessageDialog(null, "Error: Player has not enough money!");
 			return true;
 		}
 	}
 	public void raisePotShare(){
- 		potShare += currentBet;
- 		currentBet = 0;
+		potShare += currentBet;
+		currentBet = 0;
 	}
 	public void looseShare(int minPotShare){
 		potShare -= minPotShare;
