@@ -13,10 +13,13 @@ public class Table {
 	private LinkedList<Player> playerList = new LinkedList<Player>();
 	private Deck deck = new Deck(52);
 	private Deck discardPile = new Deck(0);
+	private int roundCounter = 0;
+	private int roundsToBlindRaise = 4;
 	private int smallBlind = 25;
-	private int maxPlayers = 4;
+	private int maxPlayers = 8;
+	private int startMoney = 5000;
 	
-	private boolean addPlayer(String name, int money, int seat){	
+	private boolean addPlayer(String name, int money, int seat){
 		int counter = 0;
 		do{
 			if(counter < playerList.size()){
@@ -60,23 +63,6 @@ public class Table {
 		}
 	}
 	
-	private void showFlop(){
-		discardPile.add(deck.draw());// burncard
-		communityCards[0] = deck.draw();
-		communityCards[1] = deck.draw();
-		communityCards[2] = deck.draw();
-	}
-	
-	private void showTurn(){
-		discardPile.add(deck.draw());// burncard
-		communityCards[3] = deck.draw();
-	}
-	
-	private void showRiver(){
-		discardPile.add(deck.draw());// burncard
-		communityCards[4] = deck.draw();
-	}
-	
 	private void printStatus(){
 		System.out.println("aktueller Small Blind: " + smallBlind + " Dealer: " + dealer.getPlayerName());
 		for (int i = 0; i<playerList.size(); i++){
@@ -90,6 +76,7 @@ public class Table {
 		}
 		System.out.print("\n");
 	}
+	
 	private List<PokerCard> getSevenCards(Player p){
 		List<PokerCard> sevenCards = new LinkedList<PokerCard>();
 		for (int i = 0; i < 5; i++){
@@ -104,17 +91,17 @@ public class Table {
 		//Basiseinstellungen des Spiels
 		maxPlayers = Main.inputMaxPlayers(maxPlayers);
 		smallBlind = Main.inputSmallBlind(smallBlind);
+		roundsToBlindRaise = Main.inputBlindRaise(roundsToBlindRaise);
 		//Spieler hinzufügen
 		String newName = "";
 		int counter = 0;
-		int startMoney = 0;
 		int seat = 0;
 		do{
 			newName = Main.inputPlayerName(counter); 
 			if (newName != null){
 				if (!newName.equals("")){
 					counter++;
-					startMoney = Main.inputStartMoney(newName);
+					startMoney = Main.inputStartMoney(newName,startMoney);
 					do{
 						seat = Main.inputSeat(newName, counter);
 					}while (addPlayer(newName, startMoney, seat));
@@ -123,41 +110,37 @@ public class Table {
 		} while ((newName != null) && (counter < maxPlayers));
 		//Spielablauf
 		while(playerList.size() > 1){
+			roundCounter++;
 			pushDealer();
 			deck.shuffle();
+			if (roundCounter % roundsToBlindRaise == 0){
+				smallBlind *= 2;
+			}
 			int foldCount = 0;
 			int round = 0;
 			do{
 				int lastBet = 0;
-				current = nextPlayer(dealer);
-				Player lastRaise = null;
-				switch(round){
-					case 0:
-						//Blinds zahlen
-						boolean loop;
-						do{
-							if (current.getMoney() < smallBlind){
-								JOptionPane.showMessageDialog(null, (current.getPlayerName() + " hat nicht genug Geld um den Small Blind\n zu zahlen und ist ausgeschieden!"));
-								current.putMoney(current.getMoney());
-								deletePlayer(current);
-								loop = true;
-							}else{
-								current.putMoney(smallBlind);
-								loop = false;
-							}
-						}while (loop);
-						do{
-							current = nextPlayer(current);
-							if (current.getMoney() < smallBlind*2){
-								JOptionPane.showMessageDialog(null, (current.getPlayerName() + " hat nicht genug Geld um den Big Blind\n zu zahlen und ist ausgeschieden!"));
-								current.putMoney(current.getMoney());
-								deletePlayer(current);
-								loop = true;
-							}else{
-								current.putMoney(smallBlind*2);
-								loop = false;
-							}
-						}while (loop);
+				if (playerList.size() != 2){
+					current = dealer;
+				}else{
+					current = prevPlayer(dealer);
+				}
+				Player lastRaise = nextPlayer(current);
+				switch(round){ //Aktionen abhängig von der Rundenzahl
+					case 0: //Blinds zahlen
+						current = nextPlayer(current);
+						if (current.getMoney() < smallBlind){
+							current.putMoney(current.getMoney());
+						}else{
+							current.putMoney(smallBlind);
+						}
+						current = nextPlayer(current);
+						if (current.getMoney() < smallBlind*2){
+							current.putMoney(current.getMoney());
+						}else{
+							current.putMoney(smallBlind*2);
+						}
+						lastRaise = current;
 						lastBet = smallBlind*2;
 						//Karten austeilen
 						for (int j = 0; j<2; j++){
@@ -168,14 +151,19 @@ public class Table {
 							}
 						}
 						break;
-					case 1:
-						showFlop();
+					case 1: //Flop
+						discardPile.add(deck.draw());// burncard
+						communityCards[0] = deck.draw();
+						communityCards[1] = deck.draw();
+						communityCards[2] = deck.draw();
 						break;
-					case 2:
-						showTurn();
+					case 2: //Turn
+						discardPile.add(deck.draw());// burncard
+						communityCards[3] = deck.draw();
 						break;
-					case 3:
-						showRiver();
+					case 3: //River
+						discardPile.add(deck.draw());// burncard
+						communityCards[4] = deck.draw();
 						break;
 				}
 				//Setzrunden
@@ -184,7 +172,7 @@ public class Table {
 					if (!current.getFolded() && current.getMoney() > 0){
 						printStatus();
 						// Spielereingabe
-						boolean loop;
+						boolean loop = false;
 						do{
 							loop = false;
 							//Für Ausgabe
@@ -202,9 +190,12 @@ public class Table {
 							//Aktionsauswahl
 							switch (Main.inputAction(current.getPlayerName(), options)){
 								case 0: // Check or Call
-									if (current.getMoney() + current.getCurrentBet() < lastBet){
+									if (current.getMoney() + current.getCurrentBet() <= lastBet){
 										if (Main.inputAllIn()==0){
 											current.putMoney(current.getMoney());
+											if (lastRaise == null){
+												lastRaise = current;
+											}
 										}else{
 											loop = true;
 										}
@@ -221,6 +212,7 @@ public class Table {
 										if (Main.inputAllIn()==0){
 											current.putMoney(current.getMoney());
 											if (current.getCurrentBet() > lastBet){
+												lastRaise = current;
 												lastBet = current.getCurrentBet();
 											}
 										}else{
@@ -287,12 +279,15 @@ public class Table {
 			}while(minPotShare != null);
 			printStatus();
 			//Aufräumen
-			for (int i = 0; i<playerList.size(); i++){
+			for (int i = playerList.size() - 1; i>=0; i--){
 				if (playerList.get(i).getCards()[0] != null || playerList.get(i).getCards()[1] != null ){
 					discardPile.add(playerList.get(i).discardCard());
 					discardPile.add(playerList.get(i).discardCard());
 				}
 				playerList.get(i).setFolded(false);
+				if (playerList.get(i).getMoney() == 0){
+					deletePlayer(playerList.get(i));
+				}
 			}
 			for (int i = 0; i<5; i++){
 				discardPile.add(communityCards[i]);
@@ -301,6 +296,7 @@ public class Table {
 			while (!discardPile.isEmpty()){
 				deck.add(discardPile.draw());
 			}
+			printStatus();
 		}
 	}
 }
