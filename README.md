@@ -9,4 +9,4 @@ OnlinePoker, ET, SB
 
 18.11.  Table um ehemalige Game-Klasse erweitert
 
-25.11.  Meilenstein 1, Entwicklung eines Offline-Pokerspiels abgeschlossen
+25.11.  **Meilenstein 1**, Entwicklung eines Offline-Pokerspiels abgeschlossen
