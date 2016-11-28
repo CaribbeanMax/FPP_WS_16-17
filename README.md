@@ -8,3 +8,5 @@ OnlinePoker, ET, SB
 11.11.  Klasse Player und Table fertiggestellt  
 
 18.11.  Table um ehemalige Game-Klasse erweitert
+
+25.11.  Meilenstein 1, Entwicklung eines Offline-Pokerspiels abgeschlossen
