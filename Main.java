@@ -7,17 +7,21 @@ public class Main {
 		Table table = new Table();
 		table.run();
 	}
+	
 	public static int inputMaxPlayers(int mP){
 		return Integer.parseInt(JOptionPane.showInputDialog("Anzahl an Plätzen am Spieltisch:", mP));
 	}
 	public static int inputSmallBlind(int sB){
 		return Integer.parseInt(JOptionPane.showInputDialog("Startwert für den Small Blind:", sB));
 	}
+	public static int inputBlindRaise(int bR){
+		return Integer.parseInt(JOptionPane.showInputDialog("Runden bis zur Blinderhöhung:", bR));
+	}
 	public static String inputPlayerName(int c){
 		return JOptionPane.showInputDialog("Name von Spieler " + (c+1) + "?" + (c>0?"\nAbbrechen für Spielbeginn":""), "Spieler "+ (c+1));
 	}
-	public static int inputStartMoney(String N){
-		return Integer.parseInt(JOptionPane.showInputDialog("Startgeld von " + N, 1000));
+	public static int inputStartMoney(String N, int m){
+		return Integer.parseInt(JOptionPane.showInputDialog("Startgeld von " + N, m));
 	}
 	public static int inputSeat(String N, int c){
 		return Integer.parseInt(JOptionPane.showInputDialog("Sitzplatz von " + N, c));
