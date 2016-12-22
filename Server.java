@@ -27,13 +27,13 @@ public class Server extends Thread{
 			listener = new ServerSocket(GAMEPORT);
 			do{
 				Socket newPlayer = listener.accept();
-				clientList.add(new Clientmanager(newPlayer,false));
+				clientList.add(new Clientmanager(newPlayer,false, this));
 				clientList.getLast().start();
 			}while(maxPlayers<clientList.size());
 			table.start();
 			do{
 				Socket newViewer = listener.accept();
-				clientList.add(new Clientmanager(newViewer,true));
+				clientList.add(new Clientmanager(newViewer,true, this));
 				clientList.getLast().start();
 			}while(table.isAlive());
 			do{
@@ -69,6 +69,23 @@ public class Server extends Thread{
 	
 	public int getSeat(int i){
 		return clientList.get(i).getSeat();
+	}
+	
+	public boolean approve(String name){
+		for(int i=0; i < clientList.size(); i++){
+			if (name.equals(clientList.get(i).getPName())){
+				return false;
+			}
+		}
+		return true;
+	}
+	public boolean approve(int seat){
+		for(int i=0; i < clientList.size(); i++){
+			if (seat==(clientList.get(i).getSeat())){
+				return false;
+			}
+		}
+		return true;
 	}
 	
 }
