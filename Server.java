@@ -17,12 +17,13 @@ public class Server extends Thread{
 	
 	private ServerSocket listener;
 	private LinkedList<Clientmanager> clientList = new LinkedList<Clientmanager>();
+	private Table table;
 	
 	public void run(){
 		int maxPlayers = Integer.parseInt(JOptionPane.showInputDialog("Anzahl an Plätzen am Spieltisch:", MAX_PLAYERS_INIT));
 		int smallBlind = Integer.parseInt(JOptionPane.showInputDialog("Startwert für den Small Blind:", SMALL_BLIND_INIT));
 		int roundsToBlindRaise = Integer.parseInt(JOptionPane.showInputDialog("Runden bis zur Blinderhöhung:", maxPlayers*2));
-		Table table = new Table(this,maxPlayers,smallBlind,roundsToBlindRaise);
+		table = new Table(this,maxPlayers,smallBlind,roundsToBlindRaise);
 		try{
 			System.out.println("Server läuft und wartet auf Clients.");
 			listener = new ServerSocket(GAMEPORT);
@@ -81,7 +82,7 @@ public class Server extends Thread{
 		clientList.get(i).sendUpdate(varName, data);
 	}
 	
-	public Object sendQuestion(String varName, int seat){
+	public void sendQuestion(String varName, int seat){
 		int clientnr = -1;
 		int i = 0;
 		while (i<clientList.size() && clientnr == -1){
@@ -91,9 +92,22 @@ public class Server extends Thread{
 				i++;
 			}
 		}
-		return clientList.get(i).sendQuestion(varName);
+		clientList.get(clientnr).sendQuestion(varName);
 	}
 
+	public Object getAnswer(int lastQuestion){
+		int clientnr = -1;
+		int i = 0;
+		while (i<clientList.size() && clientnr == -1){
+			if (clientList.get(i).getSeat() == lastQuestion){
+				clientnr = i;
+			}else{
+				i++;
+			}
+		}
+		return clientList.get(i).getAnswer();
+	}
+	
 	public String getPlayerName(int i){
 		return clientList.get(i).getPName();
 	}
@@ -120,4 +134,7 @@ public class Server extends Thread{
 		return true;
 	}
 	
+	public Table getTable(){
+		return table;
+	}
 }
