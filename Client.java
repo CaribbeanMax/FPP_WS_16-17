@@ -65,6 +65,7 @@ public class Client {
 						case "playerFolded":
 							InfoWithIndex tmpPF = (InfoWithIndex)varData;
 							tablestatus.playerFolded[tmpPF.index] = (boolean)tmpPF.data;
+							break;
 						case "playerCards":
 							InfoWithIndex tmpPC = (InfoWithIndex)varData;
 							tablestatus.playerCards[tmpPC.index] = (Card)tmpPC.data;
