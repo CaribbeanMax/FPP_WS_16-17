@@ -189,7 +189,7 @@ public class Table extends Thread{
 						}
 						server.sendUpdate("playerBet", new InfoWithIndex(current.getSeat(),current.getCurrentBet()));
 						server.sendUpdate("playerMoney",new InfoWithIndex(current.getSeat(), current.getMoney()));
-						lastRaise = current;
+						lastRaise = nextPlayer(current);
 						lastBet = smallBlind*2;
 						//Karten austeilen
 						for (int j = 0; j<2; j++){
