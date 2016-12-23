@@ -11,7 +11,6 @@ public class Clientmanager extends Thread{
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
 	private boolean endConnection = false;
-	private boolean flip = false;
 	@SuppressWarnings("unused")	private boolean isViewer;
 	private Object lastHeard = null;
 	public Clientmanager(Socket c, boolean iV, Server s){
@@ -38,8 +37,10 @@ public class Clientmanager extends Thread{
 			//Hören
 			do{
 				lastHeard = in.readObject();
-				System.out.println(lastHeard);
-				flip = !flip;
+				System.out.println("I: " + lastHeard);
+				synchronized(server.getTable()){
+					server.getTable().notify();
+				}
 			}while(!endConnection);
 			//Verabschiedung
 			
@@ -74,21 +75,19 @@ public class Clientmanager extends Thread{
 		return data;
 	}
 	
-	public Object sendQuestion(String varName){
+	public void sendQuestion(String varName){
 		Communication com = new Communication("question",varName);
-		Object data = null;
 		System.out.println("F: " + com);
 		try{
-			boolean tmp = flip;
 			out.writeObject(com);
-			while (tmp == flip){}
-			data = lastHeard;
 		}catch(IOException e){
-			System.out.println("Error connecting to client.\n" + e); 
+			System.out.println("Error connecting to client.\n" + e);
 		}
-		return data;
 	}
 
+	public Object getAnswer(){
+		return lastHeard;
+	}
 	public void endConnection(){
 		this.endConnection = true;
 	}
