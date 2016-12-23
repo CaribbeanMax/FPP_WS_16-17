@@ -20,6 +20,7 @@ public class Table extends Thread{
 	private Server server;
 	
 	public Table(Server s, int mP, int sB, int rTBR){
+		//Basiseinstellungen des Spiels
 		this.server = s;
 		this.maxPlayers = mP;
 		this.smallBlind = sB;
@@ -104,8 +105,6 @@ public class Table extends Thread{
 	}
 	
 	public void run (){
-		//Basiseinstellungen des Spiels
-		
 		//Spieler hinzufügen
 		String newName = "";
 		int seat = 0;
@@ -115,11 +114,36 @@ public class Table extends Thread{
 			addPlayer(newName, STARTMONEY, seat);
 		}
 		
+		//Starttischinfos senden
+		Tablestatus firstTablestatus = new Tablestatus();
+		firstTablestatus.dealer = "";
+		firstTablestatus.current = "";
+		firstTablestatus.playerCards = new Card[2];
+		firstTablestatus.communityCards = new Card[5];
+		firstTablestatus.playerNames = new String[maxPlayers+1];
+		firstTablestatus.playerMoney = new int[maxPlayers+1];
+		firstTablestatus.playerBet = new int[maxPlayers+1];
+		firstTablestatus.playerFolded = new boolean[maxPlayers+1];
+		for (int i=0; i<maxPlayers; i++){
+			firstTablestatus.playerNames[i+1] = playerList.get(i).getPlayerName();
+			firstTablestatus.playerMoney[i+1] = playerList.get(i).getMoney();
+			firstTablestatus.playerBet[i+1] = 0;
+			firstTablestatus.playerFolded[i+1] = false;
+		}
+		firstTablestatus.pot = 0;
+		firstTablestatus.deckIsEmpty = false;
+		firstTablestatus.discardpileIsEmpty = true;
+		firstTablestatus.roundCounter = 0;
+		firstTablestatus.roundsToBlindRaise = roundsToBlindRaise;
+		firstTablestatus.smallBlind = smallBlind;
+		server.sendUpdate("tablestatus", firstTablestatus);
+		
 		//Spielablauf
 		while(playerList.size() > 1){
 			roundCounter++;
 			server.sendUpdate("roundCounter", roundCounter);
 			pushDealer();
+			server.sendUpdate("dealer", dealer.getPlayerName());
 			deck.shuffle();
 			if (roundCounter % roundsToBlindRaise == 0){
 				smallBlind *= 2;
@@ -144,24 +168,29 @@ public class Table extends Thread{
 						}else{
 							current.putMoney(smallBlind);
 						}
+						server.sendUpdate("playerBet", new InfoWithIndex(current.getSeat(),current.getCurrentBet()));
+						server.sendUpdate("playerMoney",new InfoWithIndex(current.getSeat(), current.getMoney()));
 						current = nextPlayer(current);
+						server.sendUpdate("current", current.getPlayerName());
 						if (current.getMoney() < smallBlind*2){
 							current.putMoney(current.getMoney());
 						}else{
 							current.putMoney(smallBlind*2);
 						}
+						server.sendUpdate("playerBet", new InfoWithIndex(current.getSeat(),current.getCurrentBet()));
+						server.sendUpdate("playerMoney",new InfoWithIndex(current.getSeat(), current.getMoney()));
 						lastRaise = current;
 						lastBet = smallBlind*2;
 						//Karten austeilen
 						for (int j = 0; j<2; j++){
 							for (int i = 0; i<playerList.size(); i++){
 								if (!playerList.get(i).getFolded()){
-									playerList.get(i).addCard(deck.draw());
+									Card drawn = deck.draw();
+									playerList.get(i).addCard(drawn);
+									server.sendUpdate("playerCards", new InfoWithIndex(j, drawn), playerList.get(i).getSeat());
 								}
 							}
 						}
-						server.sendUpdate("playerMoney",new InfoWithIndex(current.getSeat(), current.getMoney()));
-						server.sendUpdate("pot", getPot());
 						break;
 					case 1: //Flop
 						discardPile.add(deck.draw());// burncard
@@ -169,31 +198,35 @@ public class Table extends Thread{
 						communityCards[0] = deck.draw();
 						communityCards[1] = deck.draw();
 						communityCards[2] = deck.draw();
-						server.sendUpdate("communityCards[0]", communityCards[0]);
-						server.sendUpdate("communityCards[1]", communityCards[1]);
-						server.sendUpdate("communityCards[2]", communityCards[2]);
+						server.sendUpdate("communityCards", new InfoWithIndex(0, communityCards[0]));
+						server.sendUpdate("communityCards", new InfoWithIndex(1, communityCards[1]));
+						server.sendUpdate("communityCards", new InfoWithIndex(2, communityCards[2]));
 						break;
 					case 2: //Turn
 						discardPile.add(deck.draw());// burncard
 						communityCards[3] = deck.draw();
-						server.sendUpdate("communityCards[3]", communityCards[3]);
+						server.sendUpdate("communityCards", new InfoWithIndex(3, communityCards[3]));
 						break;
 					case 3: //River
 						discardPile.add(deck.draw());// burncard
 						communityCards[4] = deck.draw();
-						server.sendUpdate("communityCards[4]", communityCards[4]);
+						server.sendUpdate("communityCards", new InfoWithIndex(4, communityCards[4]));
 						break;
 				}
+				
 				//Setzrunden
 				while(nextPlayer(current) != lastRaise && foldCount+1 < playerList.size()){
 					current = nextPlayer(current);
+					server.sendUpdate("current", current.getPlayerName());
 					if (!current.getFolded() && current.getMoney() > 0){
 						printStatus();
+						
 						// Spielereingabe
 						boolean loop = false;
 						do{
 							loop = false;
-							//Für Ausgabe
+
+							//Aktionsauswahl
 							String option = "";
 							if (lastBet==0){
 								option="checkOrBet";
@@ -202,11 +235,11 @@ public class Table extends Thread{
 							}else{
 								option="callOrRaise";
 							}
-							//Aktionsauswahl
-							switch ((Integer)server.sendQuestion(option, current.getSeat())){
+							int tmpSwitch = (int)server.sendQuestion(option, current.getSeat());
+							switch (tmpSwitch){
 								case 0: // Check or Call
 									if (current.getMoney() + current.getCurrentBet() <= lastBet){
-										if ((Integer)(server.sendQuestion("inputAllIn", current.getSeat()))==0){
+										if ((int)(server.sendQuestion("inputAllIn", current.getSeat()))==0){
 											current.putMoney(current.getMoney());
 											if (lastRaise == null){
 												lastRaise = current;
@@ -222,9 +255,9 @@ public class Table extends Thread{
 									}
 									break;
 								case 1: // Bet or Raise
-									int raiseMoney = lastBet>0 ? (Integer)server.sendQuestion("inputRaise", current.getSeat()) : (Integer)server.sendQuestion("inputBet", current.getSeat());
+									int raiseMoney = lastBet>0 ? (int)server.sendQuestion("inputRaise", current.getSeat()) : (Integer)server.sendQuestion("inputBet", current.getSeat());
 									if (raiseMoney + lastBet - current.getCurrentBet() >= current.getMoney()){
-										if ((Integer)server.sendQuestion("inputAllIn", current.getSeat())==0){
+										if ((int)server.sendQuestion("inputAllIn", current.getSeat())==0){
 											current.putMoney(current.getMoney());
 											if (current.getCurrentBet() > lastBet){
 												lastRaise = current;
@@ -243,20 +276,28 @@ public class Table extends Thread{
 									current.setFolded(true);
 									foldCount++;
 									break;
+								default:
+									System.out.println("Ungültige Entscheidung");
+									break;
 							}
-							//server.sendUpdate();// Spielerstatus.folded
-							server.sendUpdate("playerMoney",new InfoWithIndex(current.getSeat(), current.getMoney()));
-							server.sendUpdate("pot", getPot());
+							System.out.println("switch-end");
 						}while(loop);
+						server.sendUpdate("playerMoney", new InfoWithIndex(current.getSeat(), current.getMoney()));
+						server.sendUpdate("playerBet", new InfoWithIndex(current.getSeat(), current.getCurrentBet()));
+						server.sendUpdate("playerFolded", new InfoWithIndex(current.getSeat(), current.getFolded()));
+						server.sendUpdate("pot", getPot());
 					}
 				}
+				
 				//"Zusammenschieben" des Pots
 				for (int i = 0; i<playerList.size(); i++){
 					playerList.get(i).raisePotShare();
 				}
+				server.sendUpdate("pot", getPot());
 				round++;
 				lastBet = 0;
 			}while (round<4 && foldCount+1 < playerList.size());
+			
 			//Auswertung
 			printStatus();
 			Integer minPotShare= null;
@@ -296,10 +337,13 @@ public class Table extends Thread{
 				}
 			}while(minPotShare != null);
 			for(int i=0; i < playerList.size(); i++){
-				server.sendUpdate("playerMoney",new InfoWithIndex(playerList.get(i).getSeat(), playerList.get(i).getMoney()));
+				server.sendUpdate("playerMoney", new InfoWithIndex(playerList.get(i).getSeat(), playerList.get(i).getMoney()));
+				server.sendUpdate("playerBet", new InfoWithIndex(playerList.get(i).getSeat(), playerList.get(i).getCurrentBet()));
+				server.sendUpdate("playerFolded", new InfoWithIndex(playerList.get(i).getSeat(), playerList.get(i).getFolded()));
 			}
 			server.sendUpdate("pot", getPot());
 			printStatus();
+			
 			//Aufräumen
 			for (int i = playerList.size() - 1; i>=0; i--){
 				if (playerList.get(i).getCards()[0] != null || playerList.get(i).getCards()[1] != null ){
@@ -318,9 +362,15 @@ public class Table extends Thread{
 			while (!discardPile.isEmpty()){
 				deck.add(discardPile.draw());
 			}
+			for(int i=0; i < playerList.size(); i++){
+				for(int j=0; j<2; j++){
+					server.sendUpdate("playerCards", new InfoWithIndex(j, null), playerList.get(i).getSeat());
+				}
+			}
 			server.sendUpdate("discardpileIsEmpty", true);
 			printStatus();
 		}
+		
 		//Gewinner ermitteln
 		server.sendUpdate("winner", playerList.element().getPlayerName());
 		System.out.println(playerList.element().getPlayerName() + " hat das Spiel gewonnen!");
