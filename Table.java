@@ -104,7 +104,17 @@ public class Table extends Thread{
 		return sevenCards;
 	}
 	
-	public void run (){
+	private synchronized Object sendQuestion(String q, int s){
+		server.sendQuestion(q, s);
+		try {
+			wait();
+		} catch (InterruptedException e) {
+			System.out.println("Interrupted");
+		}
+		return server.getAnswer(s);
+	}
+	
+	public synchronized void run (){
 		//Spieler hinzufügen
 		String newName = "";
 		int seat = 0;
@@ -215,7 +225,9 @@ public class Table extends Thread{
 				}
 				
 				//Setzrunden
-				while(nextPlayer(current) != lastRaise && foldCount+1 < playerList.size()){
+				boolean wasInside = false;
+				while((nextPlayer(current) != lastRaise || !wasInside)&& foldCount+1 < playerList.size()){
+					wasInside = true;
 					current = nextPlayer(current);
 					server.sendUpdate("current", current.getPlayerName());
 					if (!current.getFolded() && current.getMoney() > 0){
@@ -235,11 +247,11 @@ public class Table extends Thread{
 							}else{
 								option="callOrRaise";
 							}
-							int tmpSwitch = (int)server.sendQuestion(option, current.getSeat());
+							int tmpSwitch = (int)sendQuestion(option, current.getSeat());
 							switch (tmpSwitch){
 								case 0: // Check or Call
 									if (current.getMoney() + current.getCurrentBet() <= lastBet){
-										if ((int)(server.sendQuestion("inputAllIn", current.getSeat()))==0){
+										if ((int)(sendQuestion("inputAllIn", current.getSeat()))==0){
 											current.putMoney(current.getMoney());
 											if (lastRaise == null){
 												lastRaise = current;
@@ -255,9 +267,9 @@ public class Table extends Thread{
 									}
 									break;
 								case 1: // Bet or Raise
-									int raiseMoney = lastBet>0 ? (int)server.sendQuestion("inputRaise", current.getSeat()) : (Integer)server.sendQuestion("inputBet", current.getSeat());
+									int raiseMoney = (int)sendQuestion( lastBet>0 ? "inputRaise":"inputBet", current.getSeat());
 									if (raiseMoney + lastBet - current.getCurrentBet() >= current.getMoney()){
-										if ((int)server.sendQuestion("inputAllIn", current.getSeat())==0){
+										if ((int)sendQuestion("inputAllIn", current.getSeat())==0){
 											current.putMoney(current.getMoney());
 											if (current.getCurrentBet() > lastBet){
 												lastRaise = current;
@@ -280,12 +292,10 @@ public class Table extends Thread{
 									System.out.println("Ungültige Entscheidung");
 									break;
 							}
-							System.out.println("switch-end");
 						}while(loop);
 						server.sendUpdate("playerMoney", new InfoWithIndex(current.getSeat(), current.getMoney()));
 						server.sendUpdate("playerBet", new InfoWithIndex(current.getSeat(), current.getCurrentBet()));
 						server.sendUpdate("playerFolded", new InfoWithIndex(current.getSeat(), current.getFolded()));
-						server.sendUpdate("pot", getPot());
 					}
 				}
 				
