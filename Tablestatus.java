@@ -1,6 +1,9 @@
 package main;
 
-public class Tablestatus {
+import java.io.Serializable;
+
+public class Tablestatus implements Serializable{
+	private static final long serialVersionUID = 1L;
 	public String dealer;
 	public String current;
 	public Card[] communityCards;
