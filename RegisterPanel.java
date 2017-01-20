@@ -34,6 +34,7 @@ public class RegisterPanel extends JPanel {
 		panel_info.setLayout(gbl_panel_info);
 		
 		JLabel lblName = new JLabel("Name");
+		lblName.setHorizontalAlignment(SwingConstants.TRAILING);
 		GridBagConstraints gbc_lblName = new GridBagConstraints();
 		gbc_lblName.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblName.insets = new Insets(0, 0, 5, 5);
@@ -42,7 +43,6 @@ public class RegisterPanel extends JPanel {
 		panel_info.add(lblName, gbc_lblName);
 		
 		txtName = new JTextField();
-		txtName.setText("Name");
 		GridBagConstraints gbc_txtName = new GridBagConstraints();
 		gbc_txtName.insets = new Insets(0, 0, 5, 0);
 		gbc_txtName.fill = GridBagConstraints.HORIZONTAL;
@@ -52,6 +52,7 @@ public class RegisterPanel extends JPanel {
 		txtName.setColumns(10);
 		
 		JLabel lblPassword = new JLabel("Password");
+		lblPassword.setHorizontalAlignment(SwingConstants.TRAILING);
 		GridBagConstraints gbc_lblPassword = new GridBagConstraints();
 		gbc_lblPassword.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblPassword.insets = new Insets(0, 0, 5, 5);
@@ -68,6 +69,7 @@ public class RegisterPanel extends JPanel {
 		panel_info.add(passwordField, gbc_passwordField);
 		
 		JLabel lblConfirmPassword = new JLabel("Confirm password");
+		lblConfirmPassword.setHorizontalAlignment(SwingConstants.TRAILING);
 		GridBagConstraints gbc_lblConfirmPassword = new GridBagConstraints();
 		gbc_lblConfirmPassword.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblConfirmPassword.insets = new Insets(0, 0, 5, 5);
