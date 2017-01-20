@@ -1,22 +1,23 @@
 package main;
 
 import javax.swing.JPanel;
-import javax.swing.BoxLayout;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import java.awt.GridLayout;
+import java.awt.FlowLayout;
+import javax.swing.JPasswordField;
 
 public class LoginPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private JTextField txtName;
-	private JTextField txtPassword;
+	private JPasswordField pwdPassword;
 
 	/**
 	 * Create the panel.
 	 */
 	public LoginPanel() {
-		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
 		JPanel panel = new JPanel();
 		add(panel);
@@ -32,20 +33,18 @@ public class LoginPanel extends JPanel {
 		txtName.setText("Name");
 		txtName.setColumns(10);
 		
-		JLabel lblPasswor = new JLabel("Passwor");
+		JLabel lblPasswor = new JLabel("Passwort");
 		panel.add(lblPasswor);
 		
-		txtPassword = new JTextField();
-		txtPassword.setMaximumSize(txtPassword.getPreferredSize());
-		panel.add(txtPassword);
-		txtPassword.setText("Password");
-		txtPassword.setColumns(10);
+		pwdPassword = new JPasswordField();
+		pwdPassword.setText("");
+		panel.add(pwdPassword);
 		
 		JButton btnLogin = new JButton("Login");
 		add(btnLogin);
 		
-		JButton btnRegistrieren = new JButton("Registrieren");
-		add(btnRegistrieren);
+		JButton btnRegister = new JButton("Register");
+		add(btnRegister);
 		
 	}
 
