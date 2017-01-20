@@ -39,6 +39,28 @@ public class Client implements ActionListener{
 	}
 	
 	
+	public Tablestatus getTablestatus(){
+		return tablestatus;
+	}
+	
+	@Override public void actionPerformed(ActionEvent ae){
+		switch (ae.getActionCommand()){
+			case "register":
+				break;
+			case "login":
+				break;
+			case "toRegister":
+				break;
+			case "bet/raise":
+				break;
+			case "call/check":
+				break;
+			case "fold":
+				break;
+		}
+	}
+	
+	
 	private void run(){
 		try {
 			Socket server = new Socket("localhost", Server.GAMEPORT);
