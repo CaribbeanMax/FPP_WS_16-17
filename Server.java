@@ -59,7 +59,7 @@ public class Server extends Thread{
 			listener.close();
 			System.out.println("Server wird beendet.");
 		}catch(IOException e){
-			System.out.println(e);
+			e.printStackTrace();
 		}
 	}
 
