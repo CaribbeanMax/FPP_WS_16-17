@@ -1,10 +1,11 @@
 package main;
 
 import java.net.*;
+import java.awt.event.*;
 import java.io.*;
 import javax.swing.JOptionPane;
 
-public class Client {
+public class Client implements ActionListener{
 	public static void main(String args[]) {
 		Client client = new Client();
 		client.run();
@@ -12,18 +13,46 @@ public class Client {
 	
 	private Tablestatus tablestatus = new Tablestatus();
 	
+	public Tablestatus getTablestatus(){
+		return tablestatus;
+	}
+	
+	@Override public void actionPerformed(ActionEvent ae){
+		switch (ae.getActionCommand()){
+			case "register":
+				break;
+			case "login":
+				break;
+			case "toRegister":
+				break;
+			case "bet/raise":
+				break;
+			case "call/check":
+				break;
+			case "fold":
+				break;
+		}
+	}
+	
+	
 	private void run(){
 		try {
 			Socket server = new Socket("localhost", Server.GAMEPORT);
 			ObjectInputStream in = new ObjectInputStream(server.getInputStream());
 			ObjectOutputStream out = new ObjectOutputStream(server.getOutputStream());
+			try {
+				ClientGUI frame = new ClientGUI(this);
+				frame.setVisible(true);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			Object lastHeard = null;
 			boolean end = false;
 			do{
 				try{
 					lastHeard = in.readObject();
 				}catch (ClassNotFoundException e){
-					System.out.println("Nachrichtenfehler!");
+					e.printStackTrace();
 				}
 				//Fallunterscheidung für Inputs
 				if (lastHeard instanceof Communication){
@@ -56,37 +85,37 @@ public class Client {
 							break;
 						case "playerMoney":
 							InfoWithIndex tmpPM = (InfoWithIndex)varData;
-							tablestatus.playerMoney[tmpPM.index] = (int)tmpPM.data;
+							tablestatus.playerMoney[tmpPM.index] = (Integer)tmpPM.data;
 							break;
 						case "playerBet":
 							InfoWithIndex tmpPB = (InfoWithIndex)varData;
-							tablestatus.playerBet[tmpPB.index] = (int)tmpPB.data;
+							tablestatus.playerBet[tmpPB.index] = (Integer)tmpPB.data;
 							break;
 						case "playerFolded":
 							InfoWithIndex tmpPF = (InfoWithIndex)varData;
-							tablestatus.playerFolded[tmpPF.index] = (boolean)tmpPF.data;
+							tablestatus.playerFolded[tmpPF.index] = (Boolean)tmpPF.data;
 							break;
 						case "playerCards":
 							InfoWithIndex tmpPC = (InfoWithIndex)varData;
 							tablestatus.playerCards[tmpPC.index] = (Card)tmpPC.data;
 							break;
 						case "pot":
-							tablestatus.pot = (int)varData;
+							tablestatus.pot = (Integer)varData;
 							break;
 						case "deckIsEmpty":
-							tablestatus.deckIsEmpty = (boolean)varData;
+							tablestatus.deckIsEmpty = (Boolean)varData;
 							break;
 						case "discardpileIsEmpty":
-							tablestatus.discardpileIsEmpty = (boolean)varData;
+							tablestatus.discardpileIsEmpty = (Boolean)varData;
 							break;
 						case "roundCounter":
-							tablestatus.roundCounter = (int)varData;
+							tablestatus.roundCounter = (Integer)varData;
 							break;
 						case "roundsToBlindRaise":
-							tablestatus.roundsToBlindRaise = (int)varData;
+							tablestatus.roundsToBlindRaise = (Integer)varData;
 							break;
 						case "smallBlind":
-							tablestatus.smallBlind = (int)varData;
+							tablestatus.smallBlind = (Integer)varData;
 							break;
 						case "question":
 							//Antworten
@@ -156,9 +185,9 @@ public class Client {
 			}while(!end);
 			server.close();
 		} catch (UnknownHostException e) {
-			System.out.println("Can´t find host.");
+			e.printStackTrace();
 		} catch (IOException e) {
-			System.out.println("Error connecting to host.\n" + e); 
+			e.printStackTrace();
 		}
 		//Siegeranzeige
 	}
