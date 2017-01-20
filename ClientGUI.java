@@ -12,7 +12,7 @@ import javax.swing.SwingConstants;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 
-public class BasicClientGui {
+public class ClientGUI {
 
 	private JFrame frame;
 	private JPanel panel_8;
