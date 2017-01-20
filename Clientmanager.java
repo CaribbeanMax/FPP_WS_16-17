@@ -46,7 +46,7 @@ public class Clientmanager extends Thread{
 			
 			client.close();
 		} catch (Exception e) {
-			System.out.println(e);
+			e.printStackTrace();
 		}
 	}
 	
@@ -56,7 +56,7 @@ public class Clientmanager extends Thread{
 		try{
 			out.writeObject(com);
 		}catch(IOException e){
-			System.out.println(e);
+			e.printStackTrace();
 		}
 	}
 	
@@ -68,9 +68,9 @@ public class Clientmanager extends Thread{
 			out.writeObject(com);
 			data = in.readObject();
 		}catch(IOException e){
-			System.out.println("Error connecting to client.\n" + e); 
+			e.printStackTrace();
 		}catch(ClassNotFoundException e) {
-			System.out.println("Communication error.\n" + e);
+			e.printStackTrace();
 		}
 		return data;
 	}
@@ -81,7 +81,7 @@ public class Clientmanager extends Thread{
 		try{
 			out.writeObject(com);
 		}catch(IOException e){
-			System.out.println("Error connecting to client.\n" + e);
+			e.printStackTrace();
 		}
 	}
 

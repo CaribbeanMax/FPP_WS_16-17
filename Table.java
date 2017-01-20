@@ -109,7 +109,7 @@ public class Table extends Thread{
 		try {
 			wait();
 		} catch (InterruptedException e) {
-			System.out.println("Interrupted");
+			e.printStackTrace();
 		}
 		return server.getAnswer(s);
 	}

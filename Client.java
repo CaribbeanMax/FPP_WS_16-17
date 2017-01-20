@@ -12,6 +12,32 @@ public class Client implements ActionListener{
 	}
 	
 	private Tablestatus tablestatus = new Tablestatus();
+	private ClientGUI frame = new ClientGUI(this);
+
+	public Tablestatus getTablestatus(){
+		return tablestatus;
+	}
+	
+	@Override public void actionPerformed(ActionEvent ae){
+		switch (ae.getActionCommand()){
+			case "register":
+				frame.getRegisterPanel().getPlayerName();
+				frame.getRegisterPanel().getPassword();
+				frame.getRegisterPanel().getConfirmPassword();
+				break;
+			case "login":
+				break;
+			case "toRegister":
+				break;
+			case "bet/raise":
+				break;
+			case "call/check":
+				break;
+			case "fold":
+				break;
+		}
+	}
+	
 	
 	public Tablestatus getTablestatus(){
 		return tablestatus;
@@ -41,7 +67,6 @@ public class Client implements ActionListener{
 			ObjectInputStream in = new ObjectInputStream(server.getInputStream());
 			ObjectOutputStream out = new ObjectOutputStream(server.getOutputStream());
 			try {
-				ClientGUI frame = new ClientGUI(this);
 				frame.setVisible(true);
 			} catch (Exception e) {
 				e.printStackTrace();
