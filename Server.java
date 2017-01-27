@@ -168,7 +168,7 @@ public class Server extends Thread{
 		PrintWriter fileWriter = null;
 		try {
 			fileWriter = new PrintWriter(new BufferedWriter(new FileWriter("registered_users.txt", true))); 
-			fileWriter.print(user.name + "#" + user.password);
+			fileWriter.println(user.name + "#" + user.password);
 			approved = true;
 		} catch (IOException e) {
 			e.printStackTrace();
