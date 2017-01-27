@@ -130,13 +130,13 @@ public class Server extends Thread{
 		    		String password = substringAfter(line, "#");
 		    		if(password.equals(user.password)){
 		    			approved = true;
-		    		} else {
-		    			approved = false;
 		    		}
 		    	}
 		    }
 		    fileReader.close();
-			} catch (Exception e){
+			} catch (FileNotFoundException e){
+				//e.printStackTrace();
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		return approved;
@@ -194,12 +194,12 @@ public class Server extends Thread{
 		return table;
 	}
 	
-	public static String substringBefore( String string, String delimiter )
+	private static String substringBefore( String string, String delimiter )
 	  {
 	    int pos = string.indexOf( delimiter );
 	    return pos >= 0 ? string.substring( 0, pos ) : string;
 	  }
-	public static String substringAfter( String string, String delimiter ){
+	private static String substringAfter( String string, String delimiter ){
 	    int pos = string.indexOf( delimiter );
 	    return pos >= 0 ? string.substring( pos + delimiter.length() ) : "";
 	  }	
