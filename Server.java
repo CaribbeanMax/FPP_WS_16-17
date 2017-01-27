@@ -59,7 +59,7 @@ public class Server extends Thread{
 			listener.close();
 			System.out.println("Server wird beendet.");
 		}catch(IOException e){
-			e.printStackTrace();
+			System.out.println(e);
 		}
 	}
 
@@ -116,16 +116,72 @@ public class Server extends Thread{
 		return clientList.get(i).getSeat();
 	}
 	
-	public boolean approve(String name){
-		for(int i=0; i < clientList.size(); i++){
-			if (name.equals(clientList.get(i).getPName())){
-				return false;
+	public boolean approveLogin(IDpack user){
+		boolean approved = false;
+		BufferedReader bReader;
+		try {
+			FileReader fileReader = null;
+			fileReader = new FileReader("registered_users.txt");
+		    bReader = new BufferedReader(fileReader);
+		    String line = null;
+		    while(( line = bReader.readLine())!= null) {
+		    	String name = substringBefore(line, "#");
+		    	if(name.equals(user.name)){
+		    		String password = substringAfter(line, "#");
+		    		if(password.equals(user.password)){
+		    			approved = true;
+		    		} else {
+		    			approved = false;
+		    		}
+		    	}
+		    }
+		    fileReader.close();
+			} catch (Exception e){
+				e.printStackTrace();
 			}
-		}
-		return true;
+		return approved;
 	}
 	
-	public boolean approve(int seat){
+	public boolean approveRegister(IDpack user) {
+		//check if name is available
+		boolean approved=true;
+		BufferedReader bReader;
+		try {
+			FileReader fileReader = null;
+			fileReader = new FileReader("registered_users.txt");
+		    bReader = new BufferedReader(fileReader);
+		    String line = null;
+		    while(( line = bReader.readLine())!= null) {
+		    	String name = substringBefore(line, "#");
+		    	if(name.equals(user.name)){
+		    		approved=false;	
+		    	}
+		    }
+		    bReader.close();
+			} catch (Exception e){
+				e.printStackTrace();
+			}
+		if (approved == false) {
+			return approved;//name already used
+		}
+		//register user
+		PrintWriter fileWriter = null;
+		try {
+			fileWriter = new PrintWriter(new BufferedWriter(new FileWriter("registered_users.txt", true))); 
+			fileWriter.print(user.name + "#" + user.password);
+			approved = true;
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (fileWriter != null) {
+				fileWriter.flush();
+			}
+			fileWriter.close();
+		}
+		return approved;
+	}
+	
+	public boolean approveSeat(int seat){
 		for(int i=0; i < clientList.size(); i++){
 			if (seat == clientList.get(i).getSeat()){
 				return false;
@@ -137,4 +193,14 @@ public class Server extends Thread{
 	public Table getTable(){
 		return table;
 	}
+	
+	public static String substringBefore( String string, String delimiter )
+	  {
+	    int pos = string.indexOf( delimiter );
+	    return pos >= 0 ? string.substring( 0, pos ) : string;
+	  }
+	public static String substringAfter( String string, String delimiter ){
+	    int pos = string.indexOf( delimiter );
+	    return pos >= 0 ? string.substring( pos + delimiter.length() ) : "";
+	  }	
 }
