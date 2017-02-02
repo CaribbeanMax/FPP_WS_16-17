@@ -128,7 +128,7 @@ public class Table extends Thread{
 		Tablestatus firstTablestatus = new Tablestatus();
 		firstTablestatus.dealer = "";
 		firstTablestatus.current = "";
-		firstTablestatus.playerCards = new Card[2];
+		firstTablestatus.playerCards = new Card[2][maxPlayers+1];
 		firstTablestatus.communityCards = new Card[5];
 		firstTablestatus.playerNames = new String[maxPlayers+1];
 		firstTablestatus.playerMoney = new int[maxPlayers+1];
@@ -197,7 +197,7 @@ public class Table extends Thread{
 								if (!playerList.get(i).getFolded()){
 									Card drawn = deck.draw();
 									playerList.get(i).addCard(drawn);
-									server.sendUpdate("playerCards", new InfoWithIndex(j, drawn), playerList.get(i).getSeat());
+									server.sendUpdate("playerCards", new InfoWithIndex(i, new InfoWithIndex(j, drawn)), playerList.get(i).getSeat());
 								}
 							}
 						}
@@ -310,20 +310,20 @@ public class Table extends Thread{
 			
 			//Auswertung
 			printStatus();
-			Integer minPotShare= null;
+			Integer minPotShare = null;
 			do{
-				HandValue maxHandValue= null;
-				minPotShare= null;
-				LinkedList<Player> holdsMaxHand= new LinkedList<Player>();
-				HandChecker checker= new HandChecker();	
-				for (int playerCount= 0; playerCount < playerList.size(); playerCount++){ //get minimal PotShare
+				HandValue maxHandValue = null;
+				minPotShare = null;
+				LinkedList<Player> holdsMaxHand = new LinkedList<Player>();
+				HandChecker checker = new HandChecker();	
+				for (int playerCount = 0; playerCount < playerList.size(); playerCount++){ //get minimal PotShare
 					if (!playerList.get(playerCount).getFolded() && playerList.get(playerCount).getPotShare()!= 0){
 						if ((Integer)minPotShare == null || minPotShare > playerList.get(playerCount).getPotShare()){
 							minPotShare=playerList.get(playerCount).getPotShare();
 						}
 						if(maxHandValue == null || checker.check(getSevenCards(playerList.get(playerCount))).compareTo(maxHandValue)> 0){
-							maxHandValue=checker.check(getSevenCards(playerList.get(playerCount)));
-							holdsMaxHand=new LinkedList<Player>();
+							maxHandValue = checker.check(getSevenCards(playerList.get(playerCount)));
+							holdsMaxHand = new LinkedList<Player>();
 							holdsMaxHand.add(playerList.get(playerCount));
 						}else if(checker.check(getSevenCards(playerList.get(playerCount))).compareTo(maxHandValue) == 0){
 							holdsMaxHand.add(playerList.get(playerCount));
@@ -343,6 +343,10 @@ public class Table extends Thread{
 					}
 					for (int playerCount= 0; playerCount < holdsMaxHand.size(); playerCount++){
 						holdsMaxHand.get(playerCount).gainMoney(pot/holdsMaxHand.size());
+						for (int j=0; j<2; j++){
+							server.sendUpdate("playerCards", new InfoWithIndex(playerCount,
+								new InfoWithIndex(j, playerList.get(playerCount).getCards()[j])));
+						}
 					}
 				}
 			}while(minPotShare != null);

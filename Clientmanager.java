@@ -8,6 +8,7 @@ public class Clientmanager extends Thread{
 	private Server server;
 	private int seat = -1;
 	private String name;
+	private String password;
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
 	private boolean endConnection = false;
@@ -16,7 +17,7 @@ public class Clientmanager extends Thread{
 	public Clientmanager(Socket c, boolean iV, Server s){
 		client = c;
 		server = s;
-		this.isViewer = iV;
+		isViewer = iV;
 	}
 	
 	public void run(){
@@ -24,15 +25,34 @@ public class Clientmanager extends Thread{
 			out = new ObjectOutputStream(client.getOutputStream());
 			in = new ObjectInputStream(client.getInputStream());
 			//Begrüßung
-			String requestedName;
+			boolean loggedIn = false;
 			do{
-				requestedName = (String)sendMyQuestion("name");
-			}while(!server.approve(requestedName));
-			name=requestedName;
+				lastHeard = in.readObject();
+				IDpack id = (IDpack)((Communication)lastHeard).data;
+				name = id.name;
+				password = id.password;
+				switch (((Communication)lastHeard).varName){
+					case "login":
+						if (server.approveLogin(id)){
+							sendUpdate("login",true);
+							loggedIn = true;
+						}else{
+							sendUpdate("login",false);
+						}
+						break;
+					case "register":
+						if (server.approveRegister(id)){
+							sendUpdate("register",true);
+						}else{
+							sendUpdate("register",false);
+						}
+						break;
+				}
+			}while(!loggedIn);
 			int requestedSeat;
 			do{
 				requestedSeat = (int)sendMyQuestion("seat");
-			}while(!server.approve(requestedSeat));
+			}while(!server.approveSeat(requestedSeat));
 			seat=requestedSeat;
 			//Hören
 			do{
@@ -42,8 +62,6 @@ public class Clientmanager extends Thread{
 					server.getTable().notify();
 				}
 			}while(!endConnection);
-			//Verabschiedung
-			
 			client.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -91,11 +109,13 @@ public class Clientmanager extends Thread{
 	public void endConnection(){
 		this.endConnection = true;
 	}
-	
 	public int getSeat(){
 		return this.seat;
 	}
 	public String getPName(){
 		return this.name;
+	}
+	public String getPassword(){
+		return this.password;
 	}
 }

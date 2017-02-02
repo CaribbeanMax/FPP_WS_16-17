@@ -100,9 +100,9 @@ public class RegisterPanel extends JPanel {
 		return txtName.getText();
 	}
 	public String getPassword(){
-		return passwordField.getPassword().toString();
+		return new String(passwordField.getPassword());
 	}
 	public String getConfirmPassword(){
-		return confirmPasswordField.getPassword().toString();
+		return new String(confirmPasswordField.getPassword());
 	}
 }

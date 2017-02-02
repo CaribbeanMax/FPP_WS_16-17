@@ -135,7 +135,7 @@ public class Server extends Thread{
 		    }
 		    fileReader.close();
 			} catch (FileNotFoundException e){
-				//e.printStackTrace();
+				//nix
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -158,9 +158,11 @@ public class Server extends Thread{
 		    	}
 		    }
 		    bReader.close();
-			} catch (Exception e){
-				e.printStackTrace();
-			}
+		} catch (FileNotFoundException e){
+			//nix
+		} catch (IOException e){
+			e.printStackTrace();
+		}
 		if (approved == false) {
 			return approved;//name already used
 		}
