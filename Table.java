@@ -145,9 +145,9 @@ public class Table extends Thread{
 		firstTablestatus.discardpileIsEmpty = true;
 		firstTablestatus.roundCounter = 0;
 		firstTablestatus.roundsToBlindRaise = roundsToBlindRaise;
-		firstTablestatus.smallBlind = smallBlind;
+		firstTablestatus.smallBlind = this.smallBlind;
 		server.sendUpdate("tablestatus", firstTablestatus);
-		
+		server.sendUpdate("smallBlind", smallBlind);
 		//Spielablauf
 		while(playerList.size() > 1){
 			roundCounter++;
@@ -197,7 +197,7 @@ public class Table extends Thread{
 								if (!playerList.get(i).getFolded()){
 									Card drawn = deck.draw();
 									playerList.get(i).addCard(drawn);
-									server.sendUpdate("playerCards", new InfoWithIndex(i, new InfoWithIndex(j, drawn)), playerList.get(i).getSeat());
+									server.sendUpdate("playerCards", new InfoWithIndex(playerList.get(i).getSeat(), new InfoWithIndex(j, drawn)), playerList.get(i).getSeat());
 								}
 							}
 						}
@@ -232,7 +232,12 @@ public class Table extends Thread{
 					server.sendUpdate("current", current.getPlayerName());
 					if (!current.getFolded() && current.getMoney() > 0){
 						printStatus();
-						
+						//"Zusammenschieben" des Pots (nur fürs Senden)
+						int tmpPot = getPot();
+						for (int i = 0; i<playerList.size(); i++){
+							tmpPot += playerList.get(i).getCurrentBet();
+						}
+						server.sendUpdate("pot", tmpPot);
 						// Spielereingabe
 						boolean loop = false;
 						do{
@@ -302,11 +307,12 @@ public class Table extends Thread{
 				//"Zusammenschieben" des Pots
 				for (int i = 0; i<playerList.size(); i++){
 					playerList.get(i).raisePotShare();
+					server.sendUpdate("playerBet", new InfoWithIndex(playerList.get(i).getSeat(), playerList.get(i).getCurrentBet()));
 				}
 				server.sendUpdate("pot", getPot());
 				round++;
 				lastBet = 0;
-			}while (round<4 && foldCount+1 < playerList.size());
+			}while (round<4);
 			
 			//Auswertung
 			printStatus();
@@ -321,8 +327,9 @@ public class Table extends Thread{
 						if ((Integer)minPotShare == null || minPotShare > playerList.get(playerCount).getPotShare()){
 							minPotShare=playerList.get(playerCount).getPotShare();
 						}
-						if(maxHandValue == null || checker.check(getSevenCards(playerList.get(playerCount))).compareTo(maxHandValue)> 0){
-							maxHandValue = checker.check(getSevenCards(playerList.get(playerCount)));
+						HandValue tmpHandValue = checker.check(getSevenCards(playerList.get(playerCount)));
+						if(maxHandValue == null || tmpHandValue.compareTo(maxHandValue)> 0){
+							maxHandValue = tmpHandValue;
 							holdsMaxHand = new LinkedList<Player>();
 							holdsMaxHand.add(playerList.get(playerCount));
 						}else if(checker.check(getSevenCards(playerList.get(playerCount))).compareTo(maxHandValue) == 0){
@@ -344,12 +351,18 @@ public class Table extends Thread{
 					for (int playerCount= 0; playerCount < holdsMaxHand.size(); playerCount++){
 						holdsMaxHand.get(playerCount).gainMoney(pot/holdsMaxHand.size());
 						for (int j=0; j<2; j++){
-							server.sendUpdate("playerCards", new InfoWithIndex(playerCount,
-								new InfoWithIndex(j, playerList.get(playerCount).getCards()[j])));
+							server.sendUpdate("playerCards", new InfoWithIndex(playerList.indexOf(holdsMaxHand.get(playerCount)),
+								new InfoWithIndex(j, holdsMaxHand.get(playerCount).getCards()[j])));
 						}
 					}
 				}
 			}while(minPotShare != null);
+			try {
+				wait(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			//Aufräumen
 			for(int i=0; i < playerList.size(); i++){
 				server.sendUpdate("playerMoney", new InfoWithIndex(playerList.get(i).getSeat(), playerList.get(i).getMoney()));
 				server.sendUpdate("playerBet", new InfoWithIndex(playerList.get(i).getSeat(), playerList.get(i).getCurrentBet()));
@@ -357,8 +370,6 @@ public class Table extends Thread{
 			}
 			server.sendUpdate("pot", getPot());
 			printStatus();
-			
-			//Aufräumen
 			for (int i = playerList.size() - 1; i>=0; i--){
 				if (playerList.get(i).getCards()[0] != null || playerList.get(i).getCards()[1] != null ){
 					discardPile.add(playerList.get(i).discardCard());
@@ -366,19 +377,21 @@ public class Table extends Thread{
 				}
 				playerList.get(i).setFolded(false);
 				if (playerList.get(i).getMoney() == 0){
+					//server.sendUpdate("playerFolded", new InfoWithIndex(playerList.get(i).getSeat(), true));
 					deletePlayer(playerList.get(i));
 				}
 			}
 			for (int i = 0; i<5; i++){
 				discardPile.add(communityCards[i]);
 				communityCards[i] = null;
+				server.sendUpdate("communityCards", new InfoWithIndex(i, null));
 			}
 			while (!discardPile.isEmpty()){
 				deck.add(discardPile.draw());
 			}
 			for(int i=0; i < playerList.size(); i++){
 				for(int j=0; j<2; j++){
-					server.sendUpdate("playerCards", new InfoWithIndex(j, null), playerList.get(i).getSeat());
+					server.sendUpdate("playerCards", new InfoWithIndex(i, new InfoWithIndex(j, null)));
 				}
 			}
 			server.sendUpdate("discardpileIsEmpty", true);

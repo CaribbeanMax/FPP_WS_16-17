@@ -5,7 +5,7 @@ import java.awt.*;
 
 public class GamePanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-	
+	private static final int CARD_HEIGHT = 84; //252 = 2 * 2 * 3 * 3 * 7
 	private JTextField txtMoney;
 	private Client client;
 	private JPanel panelPlayers;
@@ -21,7 +21,7 @@ public class GamePanel extends JPanel {
 	private JLabel[] lblPName;
 	private JLabel[] lblPBet;
 	private JLabel[] lblPMoney;
-	private CardCanvas[][] pCards =new CardCanvas[2][];
+	private CardCanvas[][] pCards = new CardCanvas[2][];
 	private JPanel[][] pCardsPanel;
 	
 	public GamePanel(Client c) {
@@ -34,24 +34,33 @@ public class GamePanel extends JPanel {
 		scrollPane.setViewportView(panelTable);
 		panelTable.setLayout(new BorderLayout(0, 0));
 		
+		JPanel panelPlayersComp = new JPanel();
+		panelPlayersComp.setLayout(new BorderLayout());
+		
+		JPanel panelPlayersHead = new JPanel();
+		panelPlayersHead.setLayout(new GridLayout(0, 5, 5, 5));
+		panelPlayersComp.add(panelPlayersHead, BorderLayout.NORTH);
+		
 		panelPlayers = new JPanel();
-		panelTable.add(panelPlayers, BorderLayout.NORTH);
-		panelPlayers.setLayout(new GridLayout(0, 5, 0, 0));
+		panelTable.add(panelPlayersComp, BorderLayout.CENTER);
+		panelPlayers.setLayout(new GridLayout(0, 5, 5, 5));
+		panelPlayersComp.add(panelPlayers, BorderLayout.CENTER);
 		
 		// table head start
 		JLabel lblP = new JLabel("Player");
-		panelPlayers.add(lblP);
-
+		panelPlayersHead.add(lblP);
+		
 		JLabel lblCards = new JLabel("Handcards");
-		panelPlayers.add(lblCards);
-		JLabel lblDummy = new JLabel("");
-		panelPlayers.add(lblDummy);
+		panelPlayersHead.add(lblCards);
+		
+		Component verticalStrut2 = Box.createVerticalStrut(20);
+		panelPlayersHead.add(verticalStrut2);
 		
 		JLabel lblBet = new JLabel("Bet");
-		panelPlayers.add(lblBet);
+		panelPlayersHead.add(lblBet);
 		
 		JLabel lblMoney = new JLabel("Money");
-		panelPlayers.add(lblMoney);
+		panelPlayersHead.add(lblMoney);
 		// table head end
 		
 		JScrollBar scrollBar = new JScrollBar();
@@ -69,15 +78,23 @@ public class GamePanel extends JPanel {
 		panel_communitycards.setLayout(new BorderLayout(0, 0));
 
 		JPanel panel_communityrow = new JPanel();
-		panel_communitycards.add(panel_communityrow);
+		panel_communitycards.add(panel_communityrow, BorderLayout.CENTER);
+		panel_communityrow.setLayout(new GridLayout(1, 7, 0, 10));
+
+		Component verticalStrut = Box.createVerticalStrut(CARD_HEIGHT);
+		panel_communityrow.add(verticalStrut);
 		
 		for (int i=0; i<5; i++){
 			cCardsPanel[i] = new JPanel();
+			cCardsPanel[i].setLayout(new BorderLayout());
 			cCards[i] = new CardCanvas(client.getTablestatus().communityCards[i]);
 			cCardsPanel[i].setMinimumSize(cCards[i].getMinimumSize());
-			cCardsPanel[i].add(cCards[i]);
+			cCardsPanel[i].add(cCards[i], BorderLayout.CENTER);
 			panel_communityrow.add(cCardsPanel[i]);
 		}
+
+		Component verticalStrut3 = Box.createVerticalStrut(CARD_HEIGHT);
+		panel_communityrow.add(verticalStrut3);
 		
 		JLabel lblCommunityCards = new JLabel("Community Cards");
 		lblCommunityCards.setHorizontalAlignment(SwingConstants.CENTER);
@@ -140,7 +157,7 @@ public class GamePanel extends JPanel {
 		JButton btnCall = new JButton("Check/Call");
 		panel_choice.add(btnCall);
 		btnCall.addActionListener(client);
-		btnCall.setActionCommand("check/call");
+		btnCall.setActionCommand("call/check");
 		
 		JButton btnFold = new JButton("Fold");
 		panel_choice.add(btnFold);
@@ -160,16 +177,20 @@ public class GamePanel extends JPanel {
 			panelPlayers.add(lblPName[i]);
 			for (int j=0; j<2; j++){
 				pCardsPanel[j][i] = new JPanel();
+				pCardsPanel[j][i].setLayout(new BorderLayout());
 				pCards[j][i] = new CardCanvas(client.getTablestatus().playerCards[j][i]);
 				pCardsPanel[j][i].setMinimumSize(pCards[j][i].getMinimumSize());
 				panelPlayers.add(pCardsPanel[j][i]);
-				pCardsPanel[j][i].add(pCards[j][i]);
+				pCardsPanel[j][i].add(pCards[j][i], BorderLayout.CENTER);
 			}
 			lblPBet[i] = new JLabel(((Integer)(client.getTablestatus().playerBet[i])).toString());
 			panelPlayers.add(lblPBet[i]);
 			lblPMoney[i] = new JLabel(((Integer)(client.getTablestatus().playerMoney[i])).toString());
 			panelPlayers.add(lblPMoney[i]);
 		}
+
+		Component verticalStrut = Box.createVerticalStrut(75);
+		panelPlayers.add(verticalStrut);
 		validate();
 	}
 
@@ -200,8 +221,8 @@ public class GamePanel extends JPanel {
 	public JPanel getCardPanel(String s,int i){
 		switch (s){
 			case "cCardP": return cCardsPanel[i];
-			case "pCardP1": return pCardsPanel[0][i];
-			case "pCardP2": return pCardsPanel[1][i];
+			case "pCardP0": return pCardsPanel[0][i];
+			case "pCardP1": return pCardsPanel[1][i];
 			default : return null;
 		}
 	}

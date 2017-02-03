@@ -59,8 +59,7 @@ public class Client implements ActionListener{
 			case "toRegister":
 				frame.setMasterPanel("register");
 				break;
-			case "bet/raise":
-				nextActionValue = frame.getGamePanel().getInput();
+			case "call/check":
 				if (serverIsWaiting){
 					try{
 						out.writeObject(0);
@@ -72,7 +71,8 @@ public class Client implements ActionListener{
 					nextAction = 0;
 				}
 				break;
-			case "call/check":
+			case "bet/raise":
+				nextActionValue = frame.getGamePanel().getInput();
 				if (serverIsWaiting){
 					try{
 						out.writeObject(1);
@@ -128,7 +128,6 @@ public class Client implements ActionListener{
 							end = true;
 							break;
 						case "winner":
-							//TODO
 							break;
 						case "tablestatus":
 							tablestatus = (Tablestatus)varData;
@@ -167,18 +166,33 @@ public class Client implements ActionListener{
 						case "playerFolded":
 							InfoWithIndex tmpPF = (InfoWithIndex)varData;
 							tablestatus.playerFolded[tmpPF.index] = (Boolean)tmpPF.data;
-							JPanel tmpPFP = frame.getGamePanel().getCardPanel("cCardP", tmpPF.index);
-							tmpPFP.remove(tmpPFP.getComponent(0));
-							tmpPFP.add(new CardCanvas(null));
+							if ((Boolean)tmpPF.data){
+								JPanel tmpPFP = frame.getGamePanel().getCardPanel("pCardP0", tmpPF.index);
+								if (tmpPFP.getComponentCount() != 0){
+									tmpPFP.remove(tmpPFP.getComponent(0));
+								}
+								JPanel tmpPFP2 = frame.getGamePanel().getCardPanel("pCardP1", tmpPF.index);
+								if (tmpPFP2.getComponentCount() != 0){
+									tmpPFP2.remove(tmpPFP2.getComponent(0));
+								}
+							}
 							break;
 						case "playerCards":
 							InfoWithIndex tmpPC = (InfoWithIndex)varData;
 							if (tmpPC.data != null){
 								InfoWithIndex tmpPC2 = (InfoWithIndex)tmpPC.data;
-								tablestatus.playerCards[tmpPC2.index][tmpPC.index+1] = (Card)tmpPC2.data;
-								JPanel tmpPC2P = frame.getGamePanel().getCardPanel("cCardP", tmpPC2.index);
-								tmpPC2P.remove(tmpPC2P.getComponent(0));
+								tablestatus.playerCards[tmpPC2.index][tmpPC.index] = (Card)tmpPC2.data;
+								JPanel tmpPC2P;
+								if (tmpPC2.index==0){
+									tmpPC2P = frame.getGamePanel().getCardPanel("pCardP0", tmpPC.index);
+								}else{
+									tmpPC2P = frame.getGamePanel().getCardPanel("pCardP1", tmpPC.index);
+								}
+								if(tmpPC2P.getComponentCount() != 0){
+									tmpPC2P.remove(tmpPC2P.getComponent(0));
+								}
 								tmpPC2P.add(new CardCanvas((Card)tmpPC2.data));
+								frame.validate();
 							}
 							break;
 						case "pot":
@@ -229,28 +243,17 @@ public class Client implements ActionListener{
 									out.writeObject(nextActionValue);
 									break;
 								case "inputAllIn":
-									out.writeObject(nextActionValue);
+									out.writeObject(JOptionPane.showConfirmDialog(null,"All-In gehen?"));
 									break;
 								case "checkOrBet":
-									if (nextAction == -1){
-										serverIsWaiting = true;
-									}
-									out.writeObject(nextAction);
-									nextAction = -1;
-									break;
 								case "checkOrRaise":
-									if (nextAction == -1){
-										serverIsWaiting = true;
-									}
-									out.writeObject(nextAction);
-									nextAction = -1;
-									break;
 								case "callOrRaise":
 									if (nextAction == -1){
 										serverIsWaiting = true;
+									}else{
+										out.writeObject(nextAction);
+										nextAction = -1;
 									}
-									out.writeObject(nextAction);
-									nextAction = -1;
 									break;
 								default:
 									System.out.println("Didn't understand Question from server.");

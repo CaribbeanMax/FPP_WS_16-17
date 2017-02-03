@@ -9,7 +9,7 @@ public class CardCanvas extends Canvas {
 	private Image cardI;
 	
 	public CardCanvas(Card card) {
-		setMinimumSize(new Dimension(50,100));
+		setMinimumSize(new Dimension(100,200));
 		String url = "/Kartenbilder/";
 		if (card == null){
 			url += "unknownCard";
